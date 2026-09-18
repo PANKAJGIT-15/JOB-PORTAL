@@ -1,5 +1,7 @@
 <?php
+require_once dirname(__DIR__, 2) . '/helpers/session.php';
 $appName = $appName ?? 'Job Portal';
+$user = currentUser();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,9 +16,14 @@ $appName = $appName ?? 'Job Portal';
     <div class="container nav-container">
         <a href="/job-portal/public/" class="logo"><?= htmlspecialchars($appName) ?></a>
         <nav class="nav-links">
-            <a href="/job-portal/public/">Jobs</a>
-            <a href="/job-portal/public/login.php">Login</a>
-            <a href="/job-portal/public/register.php" class="btn-nav">Register</a>
+            <a href="/job-portal/public/">Browse Jobs</a>
+            <?php if (isLoggedIn()): ?>
+                <span class="user-greeting">Hi, <?= htmlspecialchars($user['name'] ?? 'User') ?> (<?= htmlspecialchars($user['role'] ?? '') ?>)</span>
+                <a href="/job-portal/public/logout.php" class="btn-nav">Logout</a>
+            <?php else: ?>
+                <a href="/job-portal/public/login.php">Login</a>
+                <a href="/job-portal/public/register.php" class="btn-nav">Register</a>
+            <?php endif; ?>
         </nav>
     </div>
 </header>
