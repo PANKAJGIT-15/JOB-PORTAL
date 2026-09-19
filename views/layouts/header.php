@@ -16,8 +16,11 @@ $user = currentUser();
     <div class="container nav-container">
         <a href="/job-portal/public/" class="logo"><?= htmlspecialchars($appName) ?></a>
         <nav class="nav-links">
-            <a href="/job-portal/public/">Browse Jobs</a>
+            <a href="/job-portal/public/jobs.php">Browse Jobs</a>
             <?php if (isLoggedIn()): ?>
+                <?php if ($user['role'] === 'employer' || $user['role'] === 'admin'): ?>
+                    <a href="/job-portal/public/post-job.php">Post a Job</a>
+                <?php endif; ?>
                 <span class="user-greeting">Hi, <?= htmlspecialchars($user['name'] ?? 'User') ?> (<?= htmlspecialchars($user['role'] ?? '') ?>)</span>
                 <a href="/job-portal/public/logout.php" class="btn-nav">Logout</a>
             <?php else: ?>
