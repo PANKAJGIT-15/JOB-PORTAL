@@ -25,3 +25,21 @@ INSERT INTO categories (name, slug, description) VALUES
 ('Digital Marketing', 'digital-marketing', 'SEO, content marketing, and growth hacking'),
 ('Data & Analytics', 'data-analytics', 'Data science, BI analytics, and data engineering')
 ON DUPLICATE KEY UPDATE name=VALUES(name);
+-- Jobs Table
+CREATE TABLE IF NOT EXISTS jobs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employer_id INT NOT NULL,
+    category_id INT NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    company_name VARCHAR(120) NOT NULL,
+    location VARCHAR(100) NOT NULL,
+    job_type ENUM('Full-time', 'Part-time', 'Contract', 'Remote') DEFAULT 'Full-time',
+    salary_range VARCHAR(50) NULL,
+    description TEXT NOT NULL,
+    requirements TEXT NULL,
+    status ENUM('active', 'closed') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (employer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
