@@ -18,6 +18,7 @@ $user = currentUser();
         <nav class="nav-links">
             <a href="/job-portal/public/jobs.php">Browse Jobs</a>
             <?php if (isLoggedIn()): ?>
+                <a href="/job-portal/public/my-applications.php">Applications</a>
                 <?php if ($user['role'] === 'employer' || $user['role'] === 'admin'): ?>
                     <a href="/job-portal/public/post-job.php">Post a Job</a>
                 <?php endif; ?>
