@@ -1,41 +1,42 @@
 <?php
-
-require_once dirname(__DIR__) . '/config/app.php';
-require_once dirname(__DIR__) . '/helpers/session.php';
-require_once dirname(__DIR__) . '/models/Job.php';
-require_once dirname(__DIR__) . '/controllers/ApplicationController.php';
-
-if (!isLoggedIn()) {
-    setFlash('error', 'Please log in to apply for this vacancy.');
-    header('Location: /job-portal/public/login.php');
-    exit;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
+require_once dirname(__DIR__) . '/config/database.php';
 
-$currentUser = currentUser();
-if ($currentUser['role'] !== 'job_seeker') {
-    setFlash('error', 'Only job seekers can apply for positions.');
-    header('Location: /job-portal/public/jobs.php');
-    exit;
-}
-
-$jobId = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
-if ($jobId <= 0) {
-    header('Location: /job-portal/public/jobs.php');
-    exit;
-}
-
-$jobModel = new Job();
-$job = $jobModel->findById($jobId);
-
-if (!$job) {
-    setFlash('error', 'Selected vacancy does not exist.');
-    header('Location: /job-portal/public/jobs.php');
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'job_seeker') {
+    header("Location: login.php");
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $appController = new ApplicationController();
-    $appController->handleApply($jobId);
-}
+    $jobId   = (int)($_POST['job_id'] ?? 0);
+    $userId  = (int)$_SESSION['user_id'];
+    $notes   = trim($_POST['cover_note'] ?? '');
 
-require_once dirname(__DIR__) . '/views/jobs/apply.php';    
+    if ($jobId <= 0) {
+        header("Location: jobs.php");
+        exit;
+    }
+
+    $db = Database::connect();
+
+    // Check if already applied
+    $check = $db->prepare("SELECT id FROM applications WHERE job_id = :jid AND user_id = :uid");
+    $check->execute([':jid' => $jobId, ':uid' => $userId]);
+    if ($check->fetch()) {
+        header("Location: job-detail.php?id={$jobId}&status=already_applied");
+        exit;
+    }
+
+    // Insert Application
+    $stmt = $db->prepare("INSERT INTO applications (job_id, user_id, cover_letter, status, applied_at) VALUES (:jid, :uid, :cl, 'pending', NOW())");
+    $stmt->execute([
+        ':jid' => $jobId,
+        ':uid' => $userId,
+        ':cl'  => $notes
+    ]);
+
+    header("Location: job-detail.php?id={$jobId}&status=success");
+    exit;
+}
